@@ -1,0 +1,19 @@
+{
+  "name": "socketsliders",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "pnpm --filter socketslidersweb dev",
+    "build:web": "pnpm --filter socketslidersweb build",
+    "dev:api": "pnpm --filter @socketsliders/api dev",
+    "dev:worker": "pnpm --filter worker dev"
+  },
+  "pnpm": {
+    "overrides": {
+      "ioredis": "5.9.0"
+    }
+  }
+}

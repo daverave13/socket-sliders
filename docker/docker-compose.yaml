@@ -1,0 +1,78 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ARTIFACTS_DIR: /data/artifacts
+      LOG_LEVEL: info
+      CORS_ORIGIN: "*"
+    depends_on:
+      - redis
+    volumes:
+      - artifacts:/data/artifacts:ro
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ../apps/worker
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      TEMPLATES_DIR: /opt/templates
+      ARTIFACTS_DIR: /data/artifacts
+      WORKSPACE_DIR: /tmp/work
+      LOG_LEVEL: info
+      WORKER_CONCURRENCY: 2
+      JOB_TIMEOUT_MS: 60000
+    depends_on:
+      - redis
+
+    # Read-only templates; writeable artifacts
+    volumes:
+      - ../templates:/opt/templates:ro
+      - artifacts:/data/artifacts:rw
+
+    # Basic hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 256
+    init: true
+
+    # Resource limits (Compose "deploy" is enforced in Swarm;
+    # still useful documentation. For non-swarm, also set cpus/mem_limit.)
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+
+    # These are honored by docker compose (non-swarm) in many setups:
+    cpus: 2.0
+    mem_limit: 2048m
+
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  artifacts:

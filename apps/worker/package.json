@@ -1,0 +1,24 @@
+{
+  "name": "@socketsliders/worker",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@socketsliders/shared": "workspace:*",
+    "bullmq": "^5.28.3",
+    "ioredis": "^5.4.2",
+    "pino": "^9.6.0",
+    "archiver": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/archiver": "^6.0.2",
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.2"
+  }
+}
