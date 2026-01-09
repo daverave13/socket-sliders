@@ -26,6 +26,12 @@ export const LabelPositionSchema = z.enum([
 export type LabelPosition = z.infer<typeof LabelPositionSchema>;
 
 /**
+ * Label position for horizontal sockets
+ */
+export const HorizontalLabelPositionSchema = z.enum(["top", "bottom"]);
+export type HorizontalLabelPosition = z.infer<typeof HorizontalLabelPositionSchema>;
+
+/**
  * Measurement with value and unit
  */
 export const MeasurementSchema = z.object({
@@ -95,6 +101,7 @@ export const VerticalSocketConfigSchema = z.union([
 const HorizontalBaseSchema = BaseSocketConfigSchema.extend({
   orientation: z.literal("horizontal"),
   length: MeasurementSchema,
+  labelPosition: HorizontalLabelPositionSchema.optional(),
 });
 
 export const HorizontalSocketConfigSchema = z.union([

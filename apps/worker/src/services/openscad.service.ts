@@ -17,7 +17,52 @@ const execAsync = promisify(exec);
 
 export class OpenSCADService {
   /**
-   * Process a socket job: generate SCAD, execute OpenSCAD, create ZIP
+   * Process a batch job: generate multiple STLs
+   * - Single socket: returns raw .stl file
+   * - Multiple sockets: returns .zip with all STLs + metadata
+   */
+  async processBatchJob(jobId: string, socketConfigs: SocketConfig[]): Promise<string> {
+    const workspaceDir = join(config.openscad.workspaceDir, jobId);
+
+    try {
+      // Create isolated workspace
+      await mkdir(workspaceDir, { recursive: true });
+      logger.info({ jobId, workspaceDir, count: socketConfigs.length }, "Created batch workspace");
+
+      // Generate all STLs
+      const stlFiles: { path: string; config: SocketConfig }[] = [];
+      for (let i = 0; i < socketConfigs.length; i++) {
+        const socketConfig = socketConfigs[i];
+        const stlFile = await this.executeOpenSCAD(workspaceDir, socketConfig, `${jobId}-${i}`);
+        await this.validateSTL(stlFile);
+        stlFiles.push({ path: stlFile, config: socketConfig });
+        logger.info({ jobId, index: i, stlFile }, "Generated STL");
+      }
+
+      let artifactPath: string;
+
+      if (stlFiles.length === 1) {
+        // Single socket: just copy the STL directly
+        artifactPath = await this.moveStlToArtifacts(stlFiles[0].path, stlFiles[0].config, jobId);
+        logger.info({ jobId, artifactPath }, "Single STL artifact stored");
+      } else {
+        // Multiple sockets: create ZIP
+        const zipPath = await this.createBatchZipArchive(jobId, stlFiles);
+        artifactPath = await this.moveToArtifacts(zipPath, jobId, ".zip");
+        logger.info({ jobId, artifactPath }, "Batch ZIP artifact stored");
+      }
+
+      return artifactPath;
+    } finally {
+      // Cleanup workspace
+      await rm(workspaceDir, { recursive: true, force: true });
+      logger.info({ jobId }, "Workspace cleaned up");
+    }
+  }
+
+  /**
+   * Process a single socket job: generate SCAD, execute OpenSCAD, create ZIP
+   * @deprecated Use processBatchJob with single-item array instead
    */
   async processJob(jobId: string, socketConfig: SocketConfig): Promise<string> {
     const workspaceDir = join(config.openscad.workspaceDir, jobId);
@@ -80,6 +125,11 @@ export class OpenSCADService {
 
     // Add label position for vertical sockets
     if (socketConfig.orientation === "vertical" && socketConfig.labelPosition) {
+      params.push(`-D`, `labelPosition=\\"${socketConfig.labelPosition}\\"`);
+    }
+
+    // Add label position for horizontal sockets
+    if (socketConfig.orientation === "horizontal" && socketConfig.labelPosition) {
       params.push(`-D`, `labelPosition=\\"${socketConfig.labelPosition}\\"`);
     }
 
@@ -209,19 +259,86 @@ export class OpenSCADService {
   }
 
   /**
-   * Move ZIP to artifacts directory
+   * Create ZIP archive with multiple STLs and metadata (for batch jobs)
    */
-  private async moveToArtifacts(
-    zipPath: string,
+  private async createBatchZipArchive(
+    jobId: string,
+    stlFiles: { path: string; config: SocketConfig }[]
+  ): Promise<string> {
+    const zipPath = join(config.openscad.workspaceDir, jobId, `${jobId}.zip`);
+    const output = createWriteStream(zipPath);
+    const archive = archiver("zip", { zlib: { level: 9 } });
+
+    return new Promise((resolve, reject) => {
+      output.on("close", () => {
+        logger.debug({ zipPath, size: archive.pointer(), count: stlFiles.length }, "Batch ZIP created");
+        resolve(zipPath);
+      });
+
+      archive.on("error", (err) => {
+        logger.error({ err }, "Batch ZIP creation failed");
+        reject(err);
+      });
+
+      archive.pipe(output);
+
+      // Add each STL file with descriptive name
+      for (const { path, config: socketConfig } of stlFiles) {
+        const stlFilename = `socket-${
+          socketConfig.orientation
+        }-${formatNominalLabel(socketConfig).replace(/[^a-zA-Z0-9]/g, "_")}.stl`;
+        archive.file(path, { name: stlFilename });
+      }
+
+      // Add metadata JSON
+      const metadata = {
+        jobId,
+        generatedAt: new Date().toISOString(),
+        socketConfigs: stlFiles.map(f => f.config),
+        generator: "SocketSliders v1.0",
+      };
+      archive.append(JSON.stringify(metadata, null, 2), {
+        name: "metadata.json",
+      });
+
+      archive.finalize();
+    });
+  }
+
+  /**
+   * Move a single STL to artifacts directory
+   */
+  private async moveStlToArtifacts(
+    stlPath: string,
+    socketConfig: SocketConfig,
     jobId: string
   ): Promise<string> {
     await mkdir(config.openscad.artifactsDir, { recursive: true });
 
-    const artifactPath = join(config.openscad.artifactsDir, `${jobId}.zip`);
+    const artifactPath = join(config.openscad.artifactsDir, `${jobId}.stl`);
 
     // Read and write to move across potential mount boundaries
-    const zipData = await readFile(zipPath);
-    await writeFile(artifactPath, zipData);
+    const stlData = await readFile(stlPath);
+    await writeFile(artifactPath, stlData);
+
+    return artifactPath;
+  }
+
+  /**
+   * Move file to artifacts directory
+   */
+  private async moveToArtifacts(
+    filePath: string,
+    jobId: string,
+    extension: string = ".zip"
+  ): Promise<string> {
+    await mkdir(config.openscad.artifactsDir, { recursive: true });
+
+    const artifactPath = join(config.openscad.artifactsDir, `${jobId}${extension}`);
+
+    // Read and write to move across potential mount boundaries
+    const fileData = await readFile(filePath);
+    await writeFile(artifactPath, fileData);
 
     return artifactPath;
   }

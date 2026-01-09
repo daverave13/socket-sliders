@@ -4,7 +4,9 @@ import { stat } from "fs/promises";
 import { join } from "path";
 import {
   JobSubmissionSchema,
+  BatchJobSubmissionSchema,
   type JobSubmission,
+  type BatchJobSubmission,
   type JobResponse,
   type JobStatus,
 } from "@socketsliders/shared";
@@ -44,6 +46,43 @@ export const jobRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
         return reply.code(201).send(response);
       } catch (error) {
         app.log.error({ error }, "Failed to submit job");
+        throw error;
+      }
+    }
+  );
+
+  /**
+   * POST /api/v1/jobs/batch - Submit a batch job (multiple sockets)
+   */
+  app.post<{ Body: BatchJobSubmission; Reply: JobResponse }>(
+    "/jobs/batch",
+    async (request, reply) => {
+      try {
+        // Validate request body
+        const submission = BatchJobSubmissionSchema.parse(request.body);
+
+        // Generate job ID
+        const jobId = randomUUID();
+
+        // Enqueue batch job
+        await jobQueue.add("generate-socket-batch", submission, {
+          jobId,
+        });
+
+        app.log.info(
+          { jobId, count: submission.socketConfigs.length },
+          "Batch job enqueued"
+        );
+
+        const response: JobResponse = {
+          id: jobId,
+          status: "pending",
+          createdAt: new Date().toISOString(),
+        };
+
+        return reply.code(201).send(response);
+      } catch (error) {
+        app.log.error({ error }, "Failed to submit batch job");
         throw error;
       }
     }
@@ -96,7 +135,9 @@ export const jobRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
 
         // Add download URL if completed
         if (status === "completed" && job.returnvalue?.artifactPath) {
-          response.downloadUrl = `${request.protocol}://${request.host}/artifacts/${job.id}.zip`;
+          // Extract extension from artifact path (.stl or .zip)
+          const ext = job.returnvalue.artifactPath.endsWith(".stl") ? ".stl" : ".zip";
+          response.downloadUrl = `${request.protocol}://${request.host}/artifacts/${job.id}${ext}`;
         }
 
         return response;
@@ -109,6 +150,7 @@ export const jobRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
 
   /**
    * GET /api/v1/jobs/:id/download - Download job artifact
+   * Supports both .stl (single socket) and .zip (batch) artifacts
    */
   app.get<{ Params: { id: string } }>(
     "/jobs/:id/download",
@@ -116,19 +158,27 @@ export const jobRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
       const { id } = request.params;
 
       try {
-        const artifactPath = join(config.artifacts.dir, `${id}.zip`);
-
-        // Check if artifact exists
+        // Check for STL file first (single socket result)
+        const stlPath = join(config.artifacts.dir, `${id}.stl`);
         try {
-          await stat(artifactPath);
+          await stat(stlPath);
+          return reply.sendFile(`${id}.stl`);
         } catch {
-          return reply.code(404).send({
-            error: "Artifact not found",
-          });
+          // STL not found, check for ZIP
         }
 
-        // Send file
-        return reply.sendFile(`${id}.zip`);
+        // Check for ZIP file (batch result or legacy)
+        const zipPath = join(config.artifacts.dir, `${id}.zip`);
+        try {
+          await stat(zipPath);
+          return reply.sendFile(`${id}.zip`);
+        } catch {
+          // ZIP not found either
+        }
+
+        return reply.code(404).send({
+          error: "Artifact not found",
+        });
       } catch (error: any) {
         app.log.error({ error, jobId: id }, "Failed to download artifact");
         throw error;

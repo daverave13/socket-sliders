@@ -14,13 +14,22 @@ export const JobStatusSchema = z.enum([
 export type JobStatus = z.infer<typeof JobStatusSchema>;
 
 /**
- * Job submission payload (client → API)
+ * Job submission payload (client → API) - single socket
  */
 export const JobSubmissionSchema = z.object({
   socketConfig: SocketConfigSchema,
   email: z.string().email().optional(), // Optional for future notifications
 });
 export type JobSubmission = z.infer<typeof JobSubmissionSchema>;
+
+/**
+ * Batch job submission payload (client → API) - multiple sockets
+ */
+export const BatchJobSubmissionSchema = z.object({
+  socketConfigs: z.array(SocketConfigSchema).min(1).max(20),
+  email: z.string().email().optional(),
+});
+export type BatchJobSubmission = z.infer<typeof BatchJobSubmissionSchema>;
 
 /**
  * Job data stored in queue/database

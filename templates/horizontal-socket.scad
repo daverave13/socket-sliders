@@ -12,9 +12,12 @@ assert(socketLength < 67, "socketLength must be less than 67");
 assert(socketLength > 0, "socketLength must be greater than 0");
 
 // label parameters, user EITHER labelNumerator/Denominator OR labelMetric
+labelPosition = "bottom";
 labelNumerator = 13; // expected parameter (required for imperial)
 labelDenominator = 16; // expected parameter (required for imperial)
 labelMetric = undef; // expected parameter (required for metric)
+
+assert(labelPosition == "top" || labelPosition == "bottom", "labelPosition must be \"top\" or \"bottom\"");
 
 function isLabelMetric() = 
     !is_undef(labelMetric);
@@ -79,7 +82,7 @@ module body() {
 }
 
 module hole_through_length() {
-  x0 = 6.5;
+  x0 = labelPosition == "top" ? 6.5 : 8.5 ;
 
   translate([x0, hole_y, hole_z])
     rotate([0, 90, 0])
@@ -104,7 +107,7 @@ labelYOffset = isLabelMetric() ? 17 : 9;
 
 scaleFactor = isLabelMetric() ? .8 : .4;
 
-translate([sliderWidth/2 - labelXOffset, topL - labelYOffset, H])
+translate([sliderWidth/2 - labelXOffset, labelPosition == "top" ? topL - labelYOffset : 0, H])
     linear_extrude(height=.6)
         scale(scaleFactor)
             import(labelPath);
