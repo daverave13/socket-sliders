@@ -15,13 +15,6 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-4">
-          <Link
-            to="/generator"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Generator
-          </Link>
-
           <Button
             variant="ghost"
             size="icon"
