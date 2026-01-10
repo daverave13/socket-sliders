@@ -1,21 +1,21 @@
-socketDiameter = 27.3; // expected parameter, outer diameter of socket
+socketDiameter = 15; // expected parameter, outer diameter of socket
 holeDiameter = socketDiameter + .75; // accounting for smooth clearance
 sliderWidth = holeDiameter + 2 ;  // total thickness
 
 assert(socketDiameter > 0, "socketDiameter must be greater than 0");
 assert(socketDiameter <= 27.3, "socketDiameter must be less than or equal to 27.3");
 
-socketLength = 65; // expected parameter, length of socket when laid on side
+socketLength = 66; // expected parameter, length of socket when laid on side
 holeLength = min(socketLength + 3, 70.5);
 
-assert(socketLength < 66, "socketLength must be less than 66");
+assert(socketLength < 67, "socketLength must be less than 67");
 assert(socketLength > 0, "socketLength must be greater than 0");
 
 // label parameters, user EITHER labelNumerator/Denominator OR labelMetric
-labelPosition = "bottom";
-labelNumerator = 13; // expected parameter (required for imperial)
-labelDenominator = 16; // expected parameter (required for imperial)
-labelMetric = undef; // expected parameter (required for metric)
+labelPosition = "top";
+labelNumerator = undef; // expected parameter (required for imperial)
+labelDenominator = undef; // expected parameter (required for imperial)
+labelMetric = 3; // expected parameter (required for metric)
 
 assert(labelPosition == "top" || labelPosition == "bottom", "labelPosition must be \"top\" or \"bottom\"");
 
@@ -107,7 +107,7 @@ labelYOffset = isLabelMetric() ? 17 : 9;
 
 scaleFactor = isLabelMetric() ? .8 : .4;
 
-translate([sliderWidth/2 - labelXOffset, labelPosition == "top" ? topL - labelYOffset : 0, H])
+translate([sliderWidth/2 - labelXOffset, labelPosition == "top" ? topL - labelYOffset/2 : 0, H])
     linear_extrude(height=.6)
         scale(scaleFactor)
             import(labelPath);

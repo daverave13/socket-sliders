@@ -251,6 +251,7 @@ export default function Generator() {
                           ? card.horizontalLabelPosition
                           : card.labelPosition
                       }
+                      metric={card.isMetric}
                     />
 
                     {/* Orientation */}

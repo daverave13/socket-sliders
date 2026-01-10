@@ -16,6 +16,7 @@ export interface SocketPreviewProps {
   socketLength?: number; // in mm, for horizontal only
   labelText: string; // e.g., "10mm" or "3/8\""
   labelPosition?: LabelPosition | HorizontalLabelPosition;
+  metric: boolean;
 }
 
 // Socket mesh component
@@ -24,7 +25,7 @@ function SocketMesh({
   socketDiameter,
   socketLength = 50,
   labelPosition,
-  metric = true,
+  metric,
 }: {
   orientation: "vertical" | "horizontal";
   socketDiameter: number;
@@ -142,6 +143,7 @@ export function SocketPreview({
   socketLength,
   labelText,
   labelPosition,
+  metric,
 }: SocketPreviewProps) {
   // Don't render if we don't have valid diameter
   const hasValidDiameter = socketDiameter && socketDiameter > 0;
@@ -166,6 +168,8 @@ export function SocketPreview({
                   orientation={orientation}
                   socketDiameter={socketDiameter}
                   socketLength={socketLength}
+                  labelPosition={labelPosition}
+                  metric={metric}
                 />
                 <SocketLabel
                   text={labelText}

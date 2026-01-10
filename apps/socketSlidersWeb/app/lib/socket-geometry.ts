@@ -178,7 +178,7 @@ export function createHorizontalSocketGeometry(
 
   // Position the hole - starts at x=6.5 or x=8.5 depending on label position
   // For preview, use default position
-  const x0 = labelPosition === "top" ? 9 : 7;
+  const x0 = labelPosition === "top" ? 8 : 10;
   const holeMesh = new THREE.Mesh(holeGeometry);
   holeMesh.position.set(x0 + holeLength / 2, HORIZONTAL.H + 1, sliderWidth / 2);
   holeMesh.rotation.z = Math.PI / 2; // Orient along X axis
