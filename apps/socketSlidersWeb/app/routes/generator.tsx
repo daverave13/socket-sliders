@@ -1,13 +1,6 @@
 import type { Route } from "./+types/generator";
 import { useState, useEffect } from "react";
-import type {
-  SocketConfig,
-  JobResponse,
-  MeasurementUnit,
-  SocketOrientation,
-  LabelPosition,
-  HorizontalLabelPosition,
-} from "@socketSliders/shared";
+import type { JobResponse } from "@socketSliders/shared";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
@@ -23,6 +16,19 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Wrench, Download, Loader2, AlertCircle, Plus, X } from "lucide-react";
 import { SocketPreview } from "~/components/SocketPreview";
+import type {
+  MeasurementUnit,
+  SocketOrientation,
+  LabelPosition,
+  HorizontalLabelPosition,
+} from "@socketSliders/shared";
+import {
+  type ConfigCardState,
+  createEmptyCard,
+  buildSocketConfig,
+  formatCardSummary,
+  isCardValid,
+} from "~/lib/generator-utils";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -33,95 +39,6 @@ export function meta({}: Route.MetaArgs) {
     },
   ];
 }
-
-// Form state for a single socket config card
-interface ConfigCardState {
-  id: string;
-  expanded: boolean;
-  orientation: SocketOrientation;
-  isMetric: boolean;
-  nominalMetric: string;
-  nominalNumerator: string;
-  nominalDenominator: string;
-  outerDiameter: string;
-  outerDiameterUnit: MeasurementUnit;
-  length: string;
-  lengthUnit: MeasurementUnit;
-  labelPosition: LabelPosition;
-  horizontalLabelPosition: HorizontalLabelPosition;
-}
-
-// Create a new empty config card
-const createEmptyCard = (expanded = true): ConfigCardState => ({
-  id: crypto.randomUUID(),
-  expanded,
-  orientation: "vertical",
-  isMetric: true,
-  nominalMetric: "",
-  nominalNumerator: "",
-  nominalDenominator: "",
-  outerDiameter: "",
-  outerDiameterUnit: "mm",
-  length: "",
-  lengthUnit: "mm",
-  labelPosition: "topLeft",
-  horizontalLabelPosition: "bottom",
-});
-
-// Build SocketConfig from card state
-const buildSocketConfig = (card: ConfigCardState): SocketConfig => {
-  return {
-    orientation: card.orientation,
-    isMetric: card.isMetric,
-    ...(card.isMetric
-      ? { nominalMetric: parseInt(card.nominalMetric) }
-      : {
-          nominalNumerator: parseInt(card.nominalNumerator),
-          nominalDenominator: parseInt(card.nominalDenominator),
-        }),
-    outerDiameter: {
-      value: parseFloat(card.outerDiameter),
-      unit: card.outerDiameterUnit,
-    },
-    ...(card.orientation === "horizontal"
-      ? {
-          length: {
-            value: parseFloat(card.length),
-            unit: card.lengthUnit,
-          },
-          labelPosition: card.horizontalLabelPosition,
-        }
-      : { labelPosition: card.labelPosition }),
-  } as SocketConfig;
-};
-
-// Format card for collapsed display
-const formatCardSummary = (card: ConfigCardState): string => {
-  if (!card.outerDiameter) return "New socket configuration";
-
-  const sizeLabel = card.isMetric
-    ? card.nominalMetric
-      ? `${card.nominalMetric}`
-      : "?"
-    : card.nominalNumerator && card.nominalDenominator
-      ? `${card.nominalNumerator}/${card.nominalDenominator}`
-      : "?";
-
-  if (card.orientation === "horizontal") {
-    return `Horizontal ${sizeLabel}`;
-  }
-  return `Vertical ${sizeLabel} (${card.labelPosition})`;
-};
-
-// Check if a card has valid data for submission
-const isCardValid = (card: ConfigCardState): boolean => {
-  if (!card.outerDiameter) return false;
-  if (card.outerDiameter && parseFloat(card.outerDiameter) > 28) return false;
-  if (!card.isMetric && (!card.nominalNumerator || !card.nominalDenominator))
-    return false;
-  if (card.orientation === "horizontal" && !card.length) return false;
-  return true;
-};
 
 export default function Generator() {
   // Array of config cards
