@@ -22,6 +22,7 @@ import {
 } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
 import { Wrench, Download, Loader2, AlertCircle, Plus, X } from "lucide-react";
+import { SocketPreview } from "~/components/SocketPreview";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -100,10 +101,10 @@ const formatCardSummary = (card: ConfigCardState): string => {
 
   const sizeLabel = card.isMetric
     ? card.nominalMetric
-      ? `${card.nominalMetric}mm`
+      ? `${card.nominalMetric}`
       : "?"
     : card.nominalNumerator && card.nominalDenominator
-      ? `${card.nominalNumerator}/${card.nominalDenominator}"`
+      ? `${card.nominalNumerator}/${card.nominalDenominator}`
       : "?";
 
   if (card.orientation === "horizontal") {
@@ -306,6 +307,35 @@ export default function Generator() {
 
                 {card.expanded && (
                   <CardContent className="space-y-8 pt-0 px-6 pb-6">
+                    {/* 3D Preview */}
+                    <SocketPreview
+                      orientation={card.orientation}
+                      socketDiameter={
+                        card.outerDiameterUnit === "mm"
+                          ? parseFloat(card.outerDiameter) || 0
+                          : (parseFloat(card.outerDiameter) || 0) * 25.4
+                      }
+                      socketLength={
+                        card.lengthUnit === "mm"
+                          ? parseFloat(card.length) || 50
+                          : (parseFloat(card.length) || 2) * 25.4
+                      }
+                      labelText={
+                        card.isMetric
+                          ? card.nominalMetric
+                            ? `${card.nominalMetric}`
+                            : ""
+                          : card.nominalNumerator && card.nominalDenominator
+                            ? `${card.nominalNumerator}/${card.nominalDenominator}`
+                            : ""
+                      }
+                      labelPosition={
+                        card.orientation === "horizontal"
+                          ? card.horizontalLabelPosition
+                          : card.labelPosition
+                      }
+                    />
+
                     {/* Orientation */}
                     <div className="space-y-4">
                       <Label className="text-lg">Orientation</Label>
@@ -456,7 +486,7 @@ export default function Generator() {
                     <div className="space-y-4">
                       <Label className="text-lg">
                         Outer Diameter
-                        <p className="text-xs text-destructive my-1">
+                        <p className="text-sm text-destructive my-1">
                           {card.outerDiameter &&
                           parseFloat(card.outerDiameter) > 28
                             ? "Value must be 28 or less"
@@ -546,7 +576,14 @@ export default function Generator() {
                     {/* Length (horizontal only) */}
                     {card.orientation === "horizontal" && (
                       <div className="space-y-4">
-                        <Label className="text-lg">Length</Label>
+                        <Label className="text-lg">
+                          Length
+                          <p className="text-sm text-destructive my-1">
+                            {card.length && parseFloat(card.length) > 66
+                              ? "Value must be 66 or less"
+                              : ""}
+                          </p>
+                        </Label>
                         <div className="flex items-center gap-4">
                           <Input
                             type="number"
@@ -555,7 +592,7 @@ export default function Generator() {
                             onChange={(e) =>
                               updateCard(card.id, { length: e.target.value })
                             }
-                            className={`flex-1 h-12 text-base ${card.length ? "" : "border border-destructive"}`}
+                            className={`flex-1 h-12 text-base ${card.length || parseFloat(card.length) > 66 ? "" : "border border-destructive"}`}
                           />
                           <Select
                             value={card.lengthUnit}
@@ -589,7 +626,8 @@ export default function Generator() {
                           value={card.horizontalLabelPosition}
                           onValueChange={(v) =>
                             updateCard(card.id, {
-                              horizontalLabelPosition: v as HorizontalLabelPosition,
+                              horizontalLabelPosition:
+                                v as HorizontalLabelPosition,
                             })
                           }
                         >

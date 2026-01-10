@@ -8,7 +8,7 @@ assert(socketDiameter <= 27.3, "socketDiameter must be less than or equal to 27.
 socketLength = 65; // expected parameter, length of socket when laid on side
 holeLength = min(socketLength + 3, 70.5);
 
-assert(socketLength < 67, "socketLength must be less than 67");
+assert(socketLength < 66, "socketLength must be less than 66");
 assert(socketLength > 0, "socketLength must be greater than 0");
 
 // label parameters, user EITHER labelNumerator/Denominator OR labelMetric
