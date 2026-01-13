@@ -3,7 +3,16 @@ import type { Route } from "./+types/home";
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Ruler, RotateCcw, Layers, ArrowRight, Wrench, Eye, Download } from "lucide-react";
+import {
+  Ruler,
+  RotateCcw,
+  Layers,
+  ArrowRight,
+  Wrench,
+  Eye,
+  Download,
+  FolderOpen,
+} from "lucide-react";
 import { BackgroundSocketScene } from "~/components/BackgroundSocketScene";
 import { generateBackgroundSockets } from "~/lib/generateBackgroundSockets";
 
@@ -48,29 +57,41 @@ export default function Home() {
           </h1>
 
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Generate parametric OpenSCAD socket holders for your workshop. Design
-            vertical or horizontal holders with live 3D preview, supporting both
-            metric and imperial measurements.
+            Generate parametric OpenSCAD socket holders for your workshop.
+            Design vertical or horizontal holders with live 3D preview,
+            supporting both metric and imperial measurements.
           </p>
 
-          <Button asChild size="lg" className="h-14 px-10 text-lg">
-            <Link to="/generators">
-              Start Generating
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="h-14 px-10 text-lg">
+              <Link to="/generators">
+                Start Generating
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="h-14 px-10 text-lg">
+              <Link to="/catalog">
+                <FolderOpen className="mr-2 h-5 w-5" />
+                Browse Catalog
+              </Link>
+            </Button>
+          </div>
         </section>
 
         {/* Features Section */}
-        <section className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16 w-full opacity-0 animate-fade-in-up animate-delay-100" style={{ animationFillMode: 'forwards' }}>
+        <section
+          className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16 w-full opacity-0 animate-fade-in-up animate-delay-100"
+          style={{ animationFillMode: "forwards" }}
+        >
           <Card className="bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <Ruler className="h-10 w-10 text-primary mb-2" />
               <CardTitle>Precise Measurements</CardTitle>
             </CardHeader>
             <CardContent className="text-muted-foreground">
-              Support for both metric (mm) and imperial (inches) socket sizes with
-              parametric precision. Custom labels are embossed directly on holders.
+              Support for both metric (mm) and imperial (inches) socket sizes
+              with parametric precision. Custom labels are embossed directly on
+              holders.
             </CardContent>
           </Card>
 
@@ -81,7 +102,8 @@ export default function Home() {
             </CardHeader>
             <CardContent className="text-muted-foreground">
               Choose vertical holders for upright storage or horizontal holders
-              for drawer-friendly layouts. Each design is optimized for its use case.
+              for drawer-friendly layouts. Each design is optimized for its use
+              case.
             </CardContent>
           </Card>
 
@@ -98,7 +120,10 @@ export default function Home() {
         </section>
 
         {/* How It Works Section */}
-        <section className="max-w-4xl mx-auto text-center mb-16 w-full opacity-0 animate-fade-in-up animate-delay-200" style={{ animationFillMode: 'forwards' }}>
+        <section
+          className="max-w-4xl mx-auto text-center mb-16 w-full opacity-0 animate-fade-in-up animate-delay-200"
+          style={{ animationFillMode: "forwards" }}
+        >
           <h2 className="text-3xl font-bold mb-10">How It Works</h2>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -119,8 +144,8 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold mb-2">2. Preview</h3>
               <p className="text-muted-foreground">
-                See your design in real-time with an interactive 3D preview before
-                generating files.
+                See your design in real-time with an interactive 3D preview
+                before generating files.
               </p>
             </div>
 
@@ -138,16 +163,13 @@ export default function Home() {
         </section>
 
         {/* Final CTA */}
-        <section className="text-center opacity-0 animate-fade-in-up animate-delay-300" style={{ animationFillMode: 'forwards' }}>
-          <p className="text-muted-foreground mb-4">
+        <section
+          className="text-center opacity-0 animate-fade-in-up animate-delay-300"
+          style={{ animationFillMode: "forwards" }}
+        >
+          <p className="text-muted-foreground">
             No installation required. Works entirely in your browser.
           </p>
-          <Button asChild size="lg" className="h-12 px-8">
-            <Link to="/generators">
-              Generate Your Socket Holder
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
         </section>
       </div>
     </div>

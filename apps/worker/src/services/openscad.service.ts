@@ -129,7 +129,7 @@ export class OpenSCADService {
     }
 
     // Add label position for horizontal sockets
-    if (socketConfig.orientation === "horizontal" && socketConfig.labelPosition) {
+    if (socketConfig.orientation === "horizontal" && "labelPosition" in socketConfig && socketConfig.labelPosition) {
       params.push(`-D`, `labelPosition=\\"${socketConfig.labelPosition}\\"`);
     }
 

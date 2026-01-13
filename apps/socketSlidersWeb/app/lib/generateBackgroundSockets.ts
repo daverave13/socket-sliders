@@ -41,17 +41,21 @@ export function generateBackgroundSockets(
 
   // Define positions that scatter around the edges, avoiding center
   // These are in 3D world coordinates for Three.js
-  const positionZones: Array<{ x: [number, number]; y: [number, number]; z: [number, number] }> = [
+  const positionZones: Array<{
+    x: [number, number];
+    y: [number, number];
+    z: [number, number];
+  }> = [
     // Top-left area
-    { x: [-80, -40], y: [30, 50], z: [-20, 20] },
+    { x: [-120, -40], y: [30, 50], z: [-20, 20] },
     // Top-right area
-    { x: [40, 80], y: [30, 50], z: [-20, 20] },
+    { x: [80, 110], y: [50, 60], z: [-20, 20] },
     // Bottom-left area
-    { x: [-80, -40], y: [-50, -30], z: [-20, 20] },
+    { x: [-140, -90], y: [-50, -30], z: [-20, 20] },
     // Bottom-right area
-    { x: [40, 80], y: [-50, -30], z: [-20, 20] },
+    { x: [80, 120], y: [-50, -30], z: [-20, 20] },
     // Far left
-    { x: [-100, -60], y: [-20, 20], z: [-30, 10] },
+    { x: [-120, -80], y: [-20, 20], z: [-30, 10] },
     // Far right
     { x: [60, 100], y: [-20, 20], z: [-30, 10] },
     // Top center (far back)
@@ -79,7 +83,7 @@ export function generateBackgroundSockets(
         range(0, Math.PI * 2, random),
         range(0, Math.PI * 2, random),
       ],
-      scale: range(0.6, 1.0, random),
+      scale: range(0.3, 0.4, random),
     });
   }
 

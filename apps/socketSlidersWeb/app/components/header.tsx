@@ -14,7 +14,13 @@ export function Header() {
           <span>SocketSliders</span>
         </Link>
 
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-2">
+          <Button variant="ghost" asChild>
+            <Link to="/generators">Generator</Link>
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link to="/catalog">Catalog</Link>
+          </Button>
           <Button
             variant="ghost"
             size="icon"

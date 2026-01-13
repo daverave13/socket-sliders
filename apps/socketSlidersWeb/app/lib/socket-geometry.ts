@@ -11,6 +11,22 @@ export interface HorizontalSocketParams {
   labelPosition: "top" | "bottom";
 }
 
+export interface SingleWideRailParams {
+  railLength: number; // mm - extrusion length of the rail
+  sliderWidth: number; // mm - width of slider channel (socketDiameter + 0.75 + 2)
+}
+
+export interface DoubleWideRailParams {
+  railLength: number; // mm - extrusion length of the rail
+  sliderWidth: number; // mm - width of slider channel (socketDiameter + 0.75 + 2)
+}
+
+// Rail constants
+const RAIL = {
+  wallThickness: 3, // mm - wall thickness on sides
+  clearance: 0.5, // mm - clearance for sliding fit
+};
+
 // Vertical socket shape constants (from vertical-socket.scad)
 const VERTICAL = {
   H: 13.05,
