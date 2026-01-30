@@ -11,7 +11,7 @@ labelNumerator = undef; // expected parameter (required for imperial)
 labelDenominator = undef; // expected parameter (required for imperial)
 labelMetric = 13; // expected parameter (required for metric)
 
-assert(!(labelPosition == "bottomMid" || labelPosition == "topMid") || socketDiameter < 25, "labelPosition cannot be \"bottomMid\" or \"topMid\" when socketDiameter is equal or greater than 25mm because the label will not fit. Please use one of the left or right label position options");
+// Label positions supported: topLeft, bottomLeft
 
 function isLabelMetric() = 
     !is_undef(labelMetric);
@@ -101,26 +101,14 @@ rotate([90, 0, 90])
 
 
 labelPath = str("./labels/", labelFile);
-labelXOffset = isLabelMetric() ? len(str(labelMetric)) * 2.6 : len(str(labelNumerator)) + len(str(labelDenominator)) + .5;
-labelYOffset = isLabelMetric() ? 8 : 2;
+labelXOffset = isLabelMetric() ? len(str(labelMetric)) * 2.6 : len(str(labelNumerator)) + len(str(labelDenominator)) + 1.2;
+labelYOffset = isLabelMetric() ? 8 : 5;
 
-scaleFactor = isLabelMetric() ? .8 : .4;
+scaleFactor = isLabelMetric() ? .8 : .5;
 
 
 if (labelPosition == "topLeft") {
-translate([0, topL - labelYOffset, H])
-    linear_extrude(height=.6)
-        scale(scaleFactor)
-            import(labelPath);
-}
-if (labelPosition == "topMid") {
-translate([sliderWidth/2 - labelXOffset, topL - labelYOffset, H])
-    linear_extrude(height=.6)
-        scale(scaleFactor)
-            import(labelPath);
-}
-if (labelPosition == "topRight") {
-translate([sliderWidth - labelXOffset*2, topL - labelYOffset, H])
+translate([1, topL - labelYOffset, H])
     linear_extrude(height=.6)
         scale(scaleFactor)
             import(labelPath);
@@ -131,18 +119,3 @@ translate([0, 0, H])
         scale(scaleFactor)
             import(labelPath);
 }
-if (labelPosition == "bottomMid") {
-translate([sliderWidth/2 - labelXOffset, holeDiameter>25 ? -1 : 0, H])
-    linear_extrude(height=.6)
-        scale(scaleFactor)
-            import(labelPath);
-}
-if (labelPosition == "bottomRight") {
-translate([sliderWidth - labelXOffset*2, 0, H])
-    linear_extrude(height=.6)
-        scale(scaleFactor)
-            import(labelPath);
-}
-
-// Known Limitations
-// 1. Label cannot be in the middle positions if the socket diameter is too large (25mm cutoff)

@@ -2,6 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SocketPreview } from "~/components/SocketPreview";
 
+// Mock label geometry JSON
+vi.mock("~/data/labels.json", () => ({
+  default: {
+    "10mm": {
+      paths: [{ points: [[0, 0], [1, 0], [1, 1], [0, 1]], isHole: false }],
+      bounds: { minX: 0, minY: 0, maxX: 1, maxY: 1, width: 1, height: 1 },
+    },
+    "3_over_8": {
+      paths: [{ points: [[0, 0], [1, 0], [1, 1], [0, 1]], isHole: false }],
+      bounds: { minX: 0, minY: 0, maxX: 1, maxY: 1, width: 1, height: 1 },
+    },
+  },
+}));
+
 // Mock react-three/fiber
 vi.mock("@react-three/fiber", () => ({
   Canvas: ({ children }: { children: React.ReactNode }) => (
@@ -12,8 +26,8 @@ vi.mock("@react-three/fiber", () => ({
 // Mock react-three/drei
 vi.mock("@react-three/drei", () => ({
   OrbitControls: () => <div data-testid="orbit-controls-mock" />,
-  Text: ({ children, ...props }: { children: React.ReactNode }) => (
-    <div data-testid="text-mock" data-position={JSON.stringify(props.position)}>
+  Text: ({ children, position }: { children: React.ReactNode; position?: number[] }) => (
+    <div data-testid="text-mock" data-position={JSON.stringify(position)}>
       {children}
     </div>
   ),
@@ -44,6 +58,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
       expect(screen.getByTestId("canvas-mock")).toBeInTheDocument();
@@ -55,6 +70,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
       const wrapper = container.firstChild as HTMLElement;
@@ -68,6 +84,7 @@ describe("SocketPreview", () => {
           socketDiameter={15}
           socketLength={50}
           labelText="10mm"
+          metric={true}
         />
       );
       const wrapper = container.firstChild as HTMLElement;
@@ -80,6 +97,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={0}
           labelText="10mm"
+          metric={true}
         />
       );
       expect(screen.getByText("Enter dimensions to preview")).toBeInTheDocument();
@@ -91,6 +109,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={0}
           labelText=""
+          metric={true}
         />
       );
       expect(screen.getByText("Enter dimensions to preview")).toBeInTheDocument();
@@ -102,6 +121,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
       expect(screen.queryByText("Enter dimensions to preview")).not.toBeInTheDocument();
@@ -113,6 +133,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
       expect(screen.getByTestId("center-mock")).toBeInTheDocument();
@@ -120,26 +141,46 @@ describe("SocketPreview", () => {
   });
 
   describe("label rendering", () => {
-    it("renders label text when provided", () => {
-      render(
+    it("renders DXF geometry label when geometry exists", () => {
+      const { container } = render(
         <SocketPreview
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
-      expect(screen.getByText("10mm")).toBeInTheDocument();
+      // DXF geometry renders as mesh, not text
+      const meshElements = container.querySelectorAll("mesh");
+      // Should have at least 2 meshes (socket body + label)
+      expect(meshElements.length).toBeGreaterThanOrEqual(2);
     });
 
-    it("renders imperial fraction labels", () => {
-      render(
+    it("renders imperial fraction labels with DXF geometry", () => {
+      const { container } = render(
         <SocketPreview
           orientation="vertical"
           socketDiameter={15}
           labelText="3/8"
+          metric={false}
         />
       );
-      expect(screen.getByText("3/8")).toBeInTheDocument();
+      // DXF geometry renders as mesh
+      const meshElements = container.querySelectorAll("mesh");
+      expect(meshElements.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("renders text fallback for unknown labels", () => {
+      render(
+        <SocketPreview
+          orientation="vertical"
+          socketDiameter={15}
+          labelText="unknown"
+          metric={true}
+        />
+      );
+      // Unknown labels fall back to text
+      expect(screen.getByText("unknown")).toBeInTheDocument();
     });
 
     it("does not render label when text is empty", () => {
@@ -148,6 +189,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText=""
+          metric={true}
         />
       );
       // The Text mock should not be rendered if labelText is empty
@@ -164,6 +206,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
       expect(container.firstChild).toBeInTheDocument();
@@ -176,6 +219,7 @@ describe("SocketPreview", () => {
           socketDiameter={15}
           socketLength={50}
           labelText="10mm"
+          metric={true}
         />
       );
       expect(container.firstChild).toBeInTheDocument();
@@ -184,67 +228,64 @@ describe("SocketPreview", () => {
 
   describe("label positions for vertical sockets", () => {
     it("accepts topLeft label position", () => {
-      render(
+      const { container } = render(
         <SocketPreview
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
           labelPosition="topLeft"
+          metric={true}
         />
       );
-      expect(screen.getByText("10mm")).toBeInTheDocument();
+      // DXF label renders as mesh with position attribute
+      const meshElements = container.querySelectorAll("mesh");
+      expect(meshElements.length).toBeGreaterThanOrEqual(2);
     });
 
-    it("accepts topMid label position", () => {
-      render(
+    it("accepts bottomLeft label position", () => {
+      const { container } = render(
         <SocketPreview
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
-          labelPosition="topMid"
+          labelPosition="bottomLeft"
+          metric={true}
         />
       );
-      expect(screen.getByText("10mm")).toBeInTheDocument();
-    });
-
-    it("accepts bottomRight label position", () => {
-      render(
-        <SocketPreview
-          orientation="vertical"
-          socketDiameter={15}
-          labelText="10mm"
-          labelPosition="bottomRight"
-        />
-      );
-      expect(screen.getByText("10mm")).toBeInTheDocument();
+      const meshElements = container.querySelectorAll("mesh");
+      expect(meshElements.length).toBeGreaterThanOrEqual(2);
     });
   });
 
   describe("label positions for horizontal sockets", () => {
     it("accepts top label position", () => {
-      render(
+      const { container } = render(
         <SocketPreview
           orientation="horizontal"
           socketDiameter={15}
           socketLength={50}
           labelText="10mm"
           labelPosition="top"
+          metric={true}
         />
       );
-      expect(screen.getByText("10mm")).toBeInTheDocument();
+      const meshElements = container.querySelectorAll("mesh");
+      expect(meshElements.length).toBeGreaterThanOrEqual(2);
     });
 
     it("accepts bottom label position", () => {
-      render(
+      const { container } = render(
         <SocketPreview
           orientation="horizontal"
           socketDiameter={15}
           socketLength={50}
           labelText="10mm"
           labelPosition="bottom"
+          metric={true}
         />
       );
-      expect(screen.getByText("10mm")).toBeInTheDocument();
+      const meshElements = container.querySelectorAll("mesh");
+      expect(meshElements.length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -255,6 +296,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
       const wrapper = container.firstChild as HTMLElement;
@@ -267,6 +309,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
       const wrapper = container.firstChild as HTMLElement;
@@ -279,6 +322,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
       const wrapper = container.firstChild as HTMLElement;
@@ -291,6 +335,7 @@ describe("SocketPreview", () => {
           orientation="vertical"
           socketDiameter={15}
           labelText="10mm"
+          metric={true}
         />
       );
       const wrapper = container.firstChild as HTMLElement;
@@ -308,6 +353,7 @@ describe("SocketPreview", () => {
             orientation="horizontal"
             socketDiameter={15}
             labelText="10mm"
+            metric={true}
           />
         )
       ).not.toThrow();
@@ -321,6 +367,7 @@ describe("SocketPreview", () => {
             orientation="vertical"
             socketDiameter={15}
             labelText="10mm"
+            metric={true}
           />
         )
       ).not.toThrow();

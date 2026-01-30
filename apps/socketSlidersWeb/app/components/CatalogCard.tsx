@@ -6,7 +6,7 @@ import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { Download, Box } from "lucide-react";
+import { ExternalLink, Box } from "lucide-react";
 import type { CatalogItem } from "~/lib/catalog-data";
 
 function STLPreview({ stlPath }: { stlPath: string }) {
@@ -86,9 +86,9 @@ export function CatalogCard({ item }: CatalogCardProps) {
 
         {/* Download Button */}
         <Button asChild className="w-full mt-4">
-          <a href={item.downloadUrl} download>
-            <Download className="mr-2 h-4 w-4" />
-            Download STL
+          <a href={item.downloadUrl} target="_blank" rel="noopener noreferrer">
+            <ExternalLink className="mr-2 h-4 w-4" />
+            View on MakerWorld
           </a>
         </Button>
       </CardContent>

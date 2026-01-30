@@ -28,6 +28,7 @@ import {
   buildSocketConfig,
   formatCardSummary,
   isCardValid,
+  IMPERIAL_SIZES,
 } from "~/lib/generator-utils";
 
 export function meta({}: Route.MetaArgs) {
@@ -240,11 +241,9 @@ export default function Generator() {
                       labelText={
                         card.isMetric
                           ? card.nominalMetric
-                            ? `${card.nominalMetric}`
+                            ? `${card.nominalMetric}mm`
                             : ""
-                          : card.nominalNumerator && card.nominalDenominator
-                            ? `${card.nominalNumerator}/${card.nominalDenominator}`
-                            : ""
+                          : card.nominalImperial || ""
                       }
                       labelPosition={
                         card.orientation === "horizontal"
@@ -364,39 +363,29 @@ export default function Generator() {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <div className="flex items-center gap-4">
-                          <Input
-                            type="number"
-                            value={card.nominalNumerator}
-                            onChange={(e) =>
-                              updateCard(card.id, {
-                                nominalNumerator: e.target.value,
-                              })
-                            }
-                            min="1"
-                            max="99"
-                            className={`w-28 h-12 text-base ${card.nominalNumerator ? "" : "border border-destructive"}`}
-                          />
-                          <span className="text-muted-foreground text-xl">
-                            /
-                          </span>
-                          <Input
-                            type="number"
-                            value={card.nominalDenominator}
-                            onChange={(e) =>
-                              updateCard(card.id, {
-                                nominalDenominator: e.target.value,
-                              })
-                            }
-                            min="1"
-                            max="99"
-                            // className="w-28 h-12 text-base"
-                            className={`w-28 h-12 text-base ${card.nominalDenominator ? "" : "border border-destructive"}`}
-                          />
-                          <span className="text-muted-foreground text-base">
-                            inch
-                          </span>
-                        </div>
+                        <Select
+                          value={card.nominalImperial}
+                          onValueChange={(value) =>
+                            updateCard(card.id, { nominalImperial: value })
+                          }
+                        >
+                          <SelectTrigger
+                            className={`h-12 text-base ${card.nominalImperial === "" ? "border border-destructive" : ""}`}
+                          >
+                            <SelectValue placeholder="Select size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {IMPERIAL_SIZES.map((size) => (
+                              <SelectItem
+                                key={size.value}
+                                value={size.value}
+                                className="text-base"
+                              >
+                                {size.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       )}
                     </div>
 
@@ -465,26 +454,11 @@ export default function Generator() {
                             <SelectItem value="topLeft" className="text-base">
                               Top Left
                             </SelectItem>
-                            <SelectItem value="topMid" className="text-base">
-                              Top Middle
-                            </SelectItem>
-                            <SelectItem value="topRight" className="text-base">
-                              Top Right
-                            </SelectItem>
                             <SelectItem
                               value="bottomLeft"
                               className="text-base"
                             >
                               Bottom Left
-                            </SelectItem>
-                            <SelectItem value="bottomMid" className="text-base">
-                              Bottom Middle
-                            </SelectItem>
-                            <SelectItem
-                              value="bottomRight"
-                              className="text-base"
-                            >
-                              Bottom Right
                             </SelectItem>
                           </SelectContent>
                         </Select>

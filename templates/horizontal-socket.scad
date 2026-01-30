@@ -12,10 +12,10 @@ assert(socketLength < 67, "socketLength must be less than 67");
 assert(socketLength > 0, "socketLength must be greater than 0");
 
 // label parameters, user EITHER labelNumerator/Denominator OR labelMetric
-labelPosition = "top";
-labelNumerator = undef; // expected parameter (required for imperial)
-labelDenominator = undef; // expected parameter (required for imperial)
-labelMetric = 3; // expected parameter (required for metric)
+labelPosition = "bottom";
+labelNumerator = 7; // expected parameter (required for imperial)
+labelDenominator = 16; // expected parameter (required for imperial)
+labelMetric = undef; // expected parameter (required for metric)
 
 assert(labelPosition == "top" || labelPosition == "bottom", "labelPosition must be \"top\" or \"bottom\"");
 
@@ -103,7 +103,7 @@ rotate([90, 0, 90])
 
 labelPath = str("./labels/", labelFile);
 labelXOffset = isLabelMetric() ? len(str(labelMetric)) * 2.5 : len(str(labelNumerator)) + len(str(labelDenominator)) + .5;
-labelYOffset = isLabelMetric() ? 17 : 9;
+labelYOffset = isLabelMetric() ? 17 : 17;
 
 scaleFactor = isLabelMetric() ? .8 : .4;
 

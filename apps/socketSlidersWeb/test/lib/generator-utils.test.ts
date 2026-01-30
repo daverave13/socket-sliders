@@ -9,14 +9,16 @@ import {
 
 // Mock crypto.randomUUID for consistent testing
 beforeEach(() => {
-  vi.spyOn(crypto, "randomUUID").mockReturnValue("test-uuid-1234");
+  vi.spyOn(crypto, "randomUUID").mockReturnValue(
+    "12345678-1234-1234-1234-123456781234"
+  );
 });
 
 describe("generator-utils", () => {
   describe("createEmptyCard", () => {
     it("creates a card with a unique id", () => {
       const card = createEmptyCard();
-      expect(card.id).toBe("test-uuid-1234");
+      expect(card.id).toBe("12345678-1234-1234-1234-123456781234");
     });
 
     it("creates an expanded card by default", () => {
@@ -42,8 +44,7 @@ describe("generator-utils", () => {
     it("has empty nominal values", () => {
       const card = createEmptyCard();
       expect(card.nominalMetric).toBe("");
-      expect(card.nominalNumerator).toBe("");
-      expect(card.nominalDenominator).toBe("");
+      expect(card.nominalImperial).toBe("");
     });
 
     it("has empty dimension values", () => {
@@ -77,8 +78,7 @@ describe("generator-utils", () => {
         orientation: "vertical",
         isMetric: true,
         nominalMetric: "10",
-        nominalNumerator: "",
-        nominalDenominator: "",
+        nominalImperial: "",
         outerDiameter: "15.5",
         outerDiameterUnit: "mm",
         length: "",
@@ -103,13 +103,12 @@ describe("generator-utils", () => {
         orientation: "vertical",
         isMetric: false,
         nominalMetric: "",
-        nominalNumerator: "3",
-        nominalDenominator: "8",
+        nominalImperial: "3/8",
         outerDiameter: "0.6",
         outerDiameterUnit: "in",
         length: "",
         lengthUnit: "mm",
-        labelPosition: "bottomRight",
+        labelPosition: "bottomLeft",
         horizontalLabelPosition: "bottom",
       };
 
@@ -120,7 +119,7 @@ describe("generator-utils", () => {
       expect(config.nominalNumerator).toBe(3);
       expect(config.nominalDenominator).toBe(8);
       expect(config.outerDiameter).toEqual({ value: 0.6, unit: "in" });
-      expect(config.labelPosition).toBe("bottomRight");
+      expect(config.labelPosition).toBe("bottomLeft");
     });
 
     it("builds a horizontal socket config with length", () => {
@@ -130,8 +129,7 @@ describe("generator-utils", () => {
         orientation: "horizontal",
         isMetric: true,
         nominalMetric: "12",
-        nominalNumerator: "",
-        nominalDenominator: "",
+        nominalImperial: "",
         outerDiameter: "18",
         outerDiameterUnit: "mm",
         length: "50",
@@ -154,8 +152,7 @@ describe("generator-utils", () => {
         orientation: "horizontal",
         isMetric: true,
         nominalMetric: "10",
-        nominalNumerator: "",
-        nominalDenominator: "",
+        nominalImperial: "",
         outerDiameter: "15",
         outerDiameterUnit: "mm",
         length: "45",
@@ -175,13 +172,12 @@ describe("generator-utils", () => {
         orientation: "vertical",
         isMetric: false,
         nominalMetric: "",
-        nominalNumerator: "1",
-        nominalDenominator: "2",
+        nominalImperial: "1/2",
         outerDiameter: "0.75",
         outerDiameterUnit: "in",
         length: "",
         lengthUnit: "mm",
-        labelPosition: "topMid",
+        labelPosition: "topLeft",
         horizontalLabelPosition: "bottom",
       };
 
@@ -196,8 +192,7 @@ describe("generator-utils", () => {
         orientation: "horizontal",
         isMetric: true,
         nominalMetric: "10",
-        nominalNumerator: "",
-        nominalDenominator: "",
+        nominalImperial: "",
         outerDiameter: "15",
         outerDiameterUnit: "mm",
         length: "2",
@@ -224,19 +219,18 @@ describe("generator-utils", () => {
         outerDiameter: "15",
         labelPosition: "topLeft",
       };
-      expect(formatCardSummary(card)).toBe("Vertical 10 (topLeft)");
+      expect(formatCardSummary(card)).toBe("Vertical 10mm (topLeft)");
     });
 
     it("formats imperial vertical socket summary", () => {
       const card: ConfigCardState = {
         ...createEmptyCard(),
         isMetric: false,
-        nominalNumerator: "3",
-        nominalDenominator: "8",
+        nominalImperial: "3/8",
         outerDiameter: "15",
-        labelPosition: "bottomRight",
+        labelPosition: "bottomLeft",
       };
-      expect(formatCardSummary(card)).toBe("Vertical 3/8 (bottomRight)");
+      expect(formatCardSummary(card)).toBe("Vertical 3/8 (bottomLeft)");
     });
 
     it("formats horizontal socket summary", () => {
@@ -246,7 +240,7 @@ describe("generator-utils", () => {
         nominalMetric: "12",
         outerDiameter: "18",
       };
-      expect(formatCardSummary(card)).toBe("Horizontal 12");
+      expect(formatCardSummary(card)).toBe("Horizontal 12mm");
     });
 
     it("shows ? for missing metric size", () => {
@@ -258,24 +252,12 @@ describe("generator-utils", () => {
       expect(formatCardSummary(card)).toBe("Vertical ? (topLeft)");
     });
 
-    it("shows ? for missing imperial numerator", () => {
+    it("shows ? for missing imperial size", () => {
       const card: ConfigCardState = {
         ...createEmptyCard(),
         isMetric: false,
         outerDiameter: "15",
-        nominalNumerator: "",
-        nominalDenominator: "8",
-      };
-      expect(formatCardSummary(card)).toBe("Vertical ? (topLeft)");
-    });
-
-    it("shows ? for missing imperial denominator", () => {
-      const card: ConfigCardState = {
-        ...createEmptyCard(),
-        isMetric: false,
-        outerDiameter: "15",
-        nominalNumerator: "3",
-        nominalDenominator: "",
+        nominalImperial: "",
       };
       expect(formatCardSummary(card)).toBe("Vertical ? (topLeft)");
     });
@@ -285,9 +267,9 @@ describe("generator-utils", () => {
         ...createEmptyCard(),
         nominalMetric: "8",
         outerDiameter: "12",
-        labelPosition: "bottomMid",
+        labelPosition: "bottomLeft",
       };
-      expect(formatCardSummary(card)).toBe("Vertical 8 (bottomMid)");
+      expect(formatCardSummary(card)).toBe("Vertical 8mm (bottomLeft)");
     });
   });
 
@@ -324,24 +306,12 @@ describe("generator-utils", () => {
       expect(isCardValid(card)).toBe(true);
     });
 
-    it("returns false for imperial socket without numerator", () => {
+    it("returns false for imperial socket without size selection", () => {
       const card: ConfigCardState = {
         ...createEmptyCard(),
         isMetric: false,
         outerDiameter: "15",
-        nominalNumerator: "",
-        nominalDenominator: "8",
-      };
-      expect(isCardValid(card)).toBe(false);
-    });
-
-    it("returns false for imperial socket without denominator", () => {
-      const card: ConfigCardState = {
-        ...createEmptyCard(),
-        isMetric: false,
-        outerDiameter: "15",
-        nominalNumerator: "3",
-        nominalDenominator: "",
+        nominalImperial: "",
       };
       expect(isCardValid(card)).toBe(false);
     });
@@ -351,8 +321,7 @@ describe("generator-utils", () => {
         ...createEmptyCard(),
         isMetric: false,
         outerDiameter: "15",
-        nominalNumerator: "3",
-        nominalDenominator: "8",
+        nominalImperial: "3/8",
       };
       expect(isCardValid(card)).toBe(true);
     });

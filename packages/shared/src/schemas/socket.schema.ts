@@ -15,14 +15,7 @@ export type MeasurementUnit = z.infer<typeof MeasurementUnitSchema>;
 /**
  * Label position for vertical sockets
  */
-export const LabelPositionSchema = z.enum([
-  "topLeft",
-  "topMid",
-  "topRight",
-  "bottomLeft",
-  "bottomMid",
-  "bottomRight",
-]);
+export const LabelPositionSchema = z.enum(["topLeft", "bottomLeft"]);
 export type LabelPosition = z.infer<typeof LabelPositionSchema>;
 
 /**

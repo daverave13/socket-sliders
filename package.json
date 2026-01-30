@@ -8,6 +8,7 @@
   "scripts": {
     "dev:web": "pnpm --filter socketslidersweb dev",
     "build:web": "pnpm --filter socketslidersweb build",
+    "build:labels": "tsx scripts/build-label-geometry.ts",
     "dev:api": "pnpm --filter @socketsliders/api dev",
     "dev:worker": "pnpm --filter worker dev"
   },
@@ -15,5 +16,8 @@
     "overrides": {
       "ioredis": "5.9.0"
     }
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
   }
 }
