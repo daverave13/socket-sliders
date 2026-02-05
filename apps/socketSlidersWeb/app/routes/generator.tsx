@@ -251,6 +251,7 @@ export default function Generator() {
                           : card.labelPosition
                       }
                       metric={card.isMetric}
+                      labelStyle={card.labelStyle}
                     />
 
                     {/* Orientation */}
@@ -388,6 +389,49 @@ export default function Generator() {
                         </Select>
                       )}
                     </div>
+
+                    {/* Label Style (imperial only) */}
+                    {!card.isMetric && (
+                      <div className="space-y-4">
+                        <Label className="text-lg">Label Style</Label>
+                        <RadioGroup
+                          value={card.labelStyle}
+                          onValueChange={(value) =>
+                            updateCard(card.id, {
+                              labelStyle: value as "styled" | "plain",
+                            })
+                          }
+                          className="flex gap-6"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <RadioGroupItem
+                              value="styled"
+                              id={`styled-${card.id}`}
+                              className="h-5 w-5"
+                            />
+                            <Label
+                              htmlFor={`styled-${card.id}`}
+                              className="font-normal cursor-pointer text-base"
+                            >
+                              Styled
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <RadioGroupItem
+                              value="plain"
+                              id={`plain-${card.id}`}
+                              className="h-5 w-5"
+                            />
+                            <Label
+                              htmlFor={`plain-${card.id}`}
+                              className="font-normal cursor-pointer text-base"
+                            >
+                              Plain Text
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    )}
 
                     {/* Outer Diameter */}
                     <div className="space-y-4">

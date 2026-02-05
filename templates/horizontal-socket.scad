@@ -16,6 +16,8 @@ labelPosition = "bottom";
 labelNumerator = 7; // expected parameter (required for imperial)
 labelDenominator = 16; // expected parameter (required for imperial)
 labelMetric = undef; // expected parameter (required for metric)
+labelStyle = "styled"; // "styled" uses DXF geometry, "plain" uses text()
+labelText = ""; // text content for plain style
 
 assert(labelPosition == "top" || labelPosition == "bottom", "labelPosition must be \"top\" or \"bottom\"");
 
@@ -106,8 +108,29 @@ labelXOffset = isLabelMetric() ? len(str(labelMetric)) * 2.5 : len(str(labelNume
 labelYOffset = isLabelMetric() ? 17 : 17;
 
 scaleFactor = isLabelMetric() ? .8 : .4;
+plainTextSize = isLabelMetric() ? 5 : 4;
+
+// Module to render DXF-based styled label
+module styled_label() {
+    scale(scaleFactor)
+        import(labelPath);
+}
+
+// Module to render plain text label
+module plain_label() {
+    displayText = isLabelMetric() ? str(labelMetric, "mm") : labelText;
+    text(displayText, size=plainTextSize, halign="left", valign="bottom", font="Liberation Sans:style=Bold");
+}
+
+// Module to render the appropriate label type
+module render_label() {
+    if (labelStyle == "plain") {
+        plain_label();
+    } else {
+        styled_label();
+    }
+}
 
 translate([sliderWidth/2 - labelXOffset, labelPosition == "top" ? topL - labelYOffset/2 : 0, H])
     linear_extrude(height=.6)
-        scale(scaleFactor)
-            import(labelPath);
+        render_label();

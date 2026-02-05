@@ -7,10 +7,14 @@
   ],
   "scripts": {
     "dev:web": "pnpm --filter socketslidersweb dev",
+    "dev:api": "pnpm --filter @socketsliders/api dev",
+    "dev:worker": "pnpm --filter @socketsliders/worker dev",
+    "dev:redis": "docker run --rm -p 6379:6379 redis:7-alpine",
+    "dev:backend": "concurrently -n redis,api,worker -c blue,green,yellow \"pnpm dev:redis\" \"pnpm dev:api\" \"pnpm dev:worker\"",
     "build:web": "pnpm --filter socketslidersweb build",
     "build:labels": "tsx scripts/build-label-geometry.ts",
-    "dev:api": "pnpm --filter @socketsliders/api dev",
-    "dev:worker": "pnpm --filter worker dev"
+    "build:docker": "docker compose -f docker/docker-compose.yaml build",
+    "start:docker": "docker compose -f docker/docker-compose.yaml up"
   },
   "pnpm": {
     "overrides": {
@@ -18,6 +22,7 @@
     }
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "tsx": "^4.21.0"
   }
 }

@@ -4,6 +4,7 @@ import type {
   SocketOrientation,
   LabelPosition,
   HorizontalLabelPosition,
+  LabelStyle,
 } from "@socketSliders/shared";
 
 // Available imperial sizes (sorted by actual size)
@@ -30,6 +31,7 @@ export interface ConfigCardState {
   isMetric: boolean;
   nominalMetric: string;
   nominalImperial: string; // e.g., "3/8"
+  labelStyle: LabelStyle; // "styled" (DXF) or "plain" (text)
   outerDiameter: string;
   outerDiameterUnit: MeasurementUnit;
   length: string;
@@ -46,6 +48,7 @@ export const createEmptyCard = (expanded = true): ConfigCardState => ({
   isMetric: true,
   nominalMetric: "",
   nominalImperial: "",
+  labelStyle: "styled",
   outerDiameter: "",
   outerDiameterUnit: "mm",
   length: "",
@@ -67,6 +70,7 @@ export const buildSocketConfig = (card: ConfigCardState): SocketConfig => {
       : {
           nominalNumerator: imperialSize?.numerator ?? 0,
           nominalDenominator: imperialSize?.denominator ?? 1,
+          labelStyle: card.labelStyle,
         }),
     outerDiameter: {
       value: parseFloat(card.outerDiameter),

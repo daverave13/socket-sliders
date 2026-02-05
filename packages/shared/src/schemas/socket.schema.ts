@@ -25,6 +25,12 @@ export const HorizontalLabelPositionSchema = z.enum(["top", "bottom"]);
 export type HorizontalLabelPosition = z.infer<typeof HorizontalLabelPositionSchema>;
 
 /**
+ * Label style for imperial sockets
+ */
+export const LabelStyleSchema = z.enum(["styled", "plain"]);
+export type LabelStyle = z.infer<typeof LabelStyleSchema>;
+
+/**
  * Measurement with value and unit
  */
 export const MeasurementSchema = z.object({
@@ -55,6 +61,7 @@ export const ImperialSocketSchema = z.object({
     .int()
     .min(1)
     .max(99, "Denominator must be ≤ 99"),
+  labelStyle: LabelStyleSchema.optional(),
 });
 
 /**

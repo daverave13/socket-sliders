@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
-import type { JobSubmission } from '@socketsliders/shared';
+import type { JobSubmission, BatchJobSubmission } from '@socketsliders/shared';
 import { config } from '../config.js';
 
 const connection = new Redis({
@@ -9,7 +9,7 @@ const connection = new Redis({
   maxRetriesPerRequest: config.redis.maxRetriesPerRequest,
 });
 
-export const jobQueue = new Queue<JobSubmission>('socket-jobs', {
+export const jobQueue = new Queue<JobSubmission | BatchJobSubmission>('socket-jobs', {
   connection,
   defaultJobOptions: {
     attempts: 3,

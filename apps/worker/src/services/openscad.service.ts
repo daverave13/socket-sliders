@@ -117,10 +117,18 @@ export class OpenSCADService {
       params.push(`-D`, `labelMetric=${socketConfig.nominalMetric}`);
       params.push(`-D`, `labelNumerator=undef`);
       params.push(`-D`, `labelDenominator=undef`);
+      params.push(`-D`, `labelStyle=\\"styled\\"`);
+      params.push(`-D`, `labelText=\\"\\"`);
     } else {
       params.push(`-D`, `labelMetric=undef`);
       params.push(`-D`, `labelNumerator=${socketConfig.nominalNumerator}`);
       params.push(`-D`, `labelDenominator=${socketConfig.nominalDenominator}`);
+      // Label style: "styled" uses DXF, "plain" uses text()
+      const labelStyle = socketConfig.labelStyle || "styled";
+      params.push(`-D`, `labelStyle=\\"${labelStyle}\\"`);
+      // Pass label text for plain style
+      const labelText = `${socketConfig.nominalNumerator}/${socketConfig.nominalDenominator}`;
+      params.push(`-D`, `labelText=\\"${labelText}\\"`);
     }
 
     // Add label position for vertical sockets

@@ -9,6 +9,7 @@ import {
 import type {
   LabelPosition,
   HorizontalLabelPosition,
+  LabelStyle,
 } from "@socketSliders/shared";
 import labelGeometryData from "~/data/labels.json";
 
@@ -63,6 +64,7 @@ export interface SocketPreviewProps {
   labelText: string; // e.g., "10mm" or "3/8\""
   labelPosition?: LabelPosition | HorizontalLabelPosition;
   metric: boolean;
+  labelStyle?: LabelStyle; // "styled" (DXF) or "plain" (text)
 }
 
 // Socket mesh component
@@ -113,7 +115,7 @@ function SocketMesh({
 // Check if a point is inside a polygon using ray casting
 function pointInPolygon(
   point: [number, number],
-  polygon: [number, number][]
+  polygon: [number, number][],
 ): boolean {
   let inside = false;
   const n = polygon.length;
@@ -196,12 +198,12 @@ function DXFLabel({
         // Scale hole points
         holePath.moveTo(
           holePoints[0][0] * labelScale,
-          holePoints[0][1] * labelScale
+          holePoints[0][1] * labelScale,
         );
         for (let i = 1; i < holePoints.length; i++) {
           holePath.lineTo(
             holePoints[i][0] * labelScale,
-            holePoints[i][1] * labelScale
+            holePoints[i][1] * labelScale,
           );
         }
         holePath.closePath();
@@ -251,7 +253,7 @@ function TextLabel({
   return (
     <Text
       position={position}
-      fontSize={8}
+      fontSize={5}
       color="#fcfcfcff"
       anchorX="center"
       anchorY="middle"
@@ -268,11 +270,13 @@ function SocketLabel({
   position,
   orientation,
   socketDiameter,
+  labelStyle = "styled",
 }: {
   text: string;
   position?: LabelPosition | HorizontalLabelPosition;
   orientation: "vertical" | "horizontal";
   socketDiameter: number;
+  labelStyle?: LabelStyle;
 }) {
   const sliderWidth = socketDiameter + 0.75 + 2;
   const labelKey = labelTextToKey(text);
@@ -308,6 +312,17 @@ function SocketLabel({
 
   if (!text) return null;
 
+  // Use plain text if requested
+  if (labelStyle === "plain") {
+    // Add small left margin for plain text
+    const plainPos: [number, number, number] = [
+      labelPos[0] + 2,
+      labelPos[1],
+      labelPos[2],
+    ];
+    return <TextLabel text={text} position={plainPos} />;
+  }
+
   // Use DXF geometry if available, otherwise fall back to text
   if (hasGeometry) {
     return <DXFLabel labelKey={labelKey} position={labelPos} />;
@@ -333,6 +348,7 @@ export function SocketPreview({
   labelText,
   labelPosition,
   metric,
+  labelStyle,
 }: SocketPreviewProps) {
   // Don't render if we don't have valid diameter
   const hasValidDiameter = socketDiameter && socketDiameter > 0;
@@ -365,6 +381,7 @@ export function SocketPreview({
                   position={labelPosition}
                   orientation={orientation}
                   socketDiameter={socketDiameter}
+                  labelStyle={labelStyle}
                 />
               </group>
             </Center>

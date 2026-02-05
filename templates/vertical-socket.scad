@@ -10,6 +10,8 @@ labelPosition = "bottomMid";
 labelNumerator = undef; // expected parameter (required for imperial)
 labelDenominator = undef; // expected parameter (required for imperial)
 labelMetric = 13; // expected parameter (required for metric)
+labelStyle = "styled"; // "styled" uses DXF geometry, "plain" uses text()
+labelText = ""; // text content for plain style
 
 // Label positions supported: topLeft, bottomLeft
 
@@ -105,17 +107,36 @@ labelXOffset = isLabelMetric() ? len(str(labelMetric)) * 2.6 : len(str(labelNume
 labelYOffset = isLabelMetric() ? 8 : 5;
 
 scaleFactor = isLabelMetric() ? .8 : .5;
+plainTextSize = isLabelMetric() ? 5 : 4;
 
+// Module to render DXF-based styled label
+module styled_label() {
+    scale(scaleFactor)
+        import(labelPath);
+}
+
+// Module to render plain text label
+module plain_label() {
+    displayText = isLabelMetric() ? str(labelMetric, "mm") : labelText;
+    text(displayText, size=plainTextSize, halign="left", valign="bottom", font="Liberation Sans:style=Bold");
+}
+
+// Module to render the appropriate label type
+module render_label() {
+    if (labelStyle == "plain") {
+        plain_label();
+    } else {
+        styled_label();
+    }
+}
 
 if (labelPosition == "topLeft") {
-translate([1, topL - labelYOffset, H])
-    linear_extrude(height=.6)
-        scale(scaleFactor)
-            import(labelPath);
+    translate([1, topL - labelYOffset, H])
+        linear_extrude(height=.6)
+            render_label();
 }
 if (labelPosition == "bottomLeft") {
-translate([0, 0, H])
-    linear_extrude(height=.6)
-        scale(scaleFactor)
-            import(labelPath);
+    translate([0, 0, H])
+        linear_extrude(height=.6)
+            render_label();
 }

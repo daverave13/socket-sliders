@@ -10,8 +10,8 @@ services:
 
   api:
     build:
-      context: ../apps/api
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: apps/api/Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -31,8 +31,8 @@ services:
 
   worker:
     build:
-      context: ../apps/worker
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: apps/worker/Dockerfile
     environment:
       NODE_ENV: production
       REDIS_HOST: redis
@@ -56,20 +56,12 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
-    pids_limit: 256
     init: true
 
-    # Resource limits (Compose "deploy" is enforced in Swarm;
-    # still useful documentation. For non-swarm, also set cpus/mem_limit.)
-    deploy:
-      resources:
-        limits:
-          cpus: "2.0"
-          memory: 2048M
-
-    # These are honored by docker compose (non-swarm) in many setups:
+    # Resource limits
     cpus: 2.0
     mem_limit: 2048m
+    pids_limit: 256
 
     restart: unless-stopped
 
