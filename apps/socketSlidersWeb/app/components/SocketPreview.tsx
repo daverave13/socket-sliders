@@ -304,8 +304,8 @@ function SocketLabel({
       // Position mapping for vertical sockets
       // After rotation, X becomes depth, Y becomes length, Z becomes height
       const positions: Record<LabelPosition, [number, number, number]> = {
-        topLeft: [-halfWidth + 6, halfLength - 4, H / 2 + 0.3],
-        bottomLeft: [-halfWidth + 5, -halfLength + 5, H / 2 + 0.3],
+        topLeft: [-halfWidth + 6, halfLength - 3, H / 2 + 0.3],
+        bottomLeft: [-halfWidth + 6, -halfLength + 3, H / 2 + 0.3],
       };
 
       return positions[(position as LabelPosition) || "topLeft"];
@@ -326,18 +326,32 @@ function SocketLabel({
 
   // Use plain text if requested
   if (labelStyle === "plain") {
-    // Add small left margin for plain text
+    // Adjust position based on text length
+    // length === 3 -> 1
+    // length === 4 -> 0
+    // length === 5 -> -1
+    let margin = 0;
+    if (text.length === 3) margin = 1;
+    else if (text.length === 5) margin = -1;
     const plainPos: [number, number, number] = [
-      labelPos[0] + 2,
+      labelPos[0] - margin,
       labelPos[1],
       labelPos[2],
     ];
-    return <TextLabel text={text} position={plainPos} labelColor={labelColor} />;
+    return (
+      <TextLabel text={text} position={plainPos} labelColor={labelColor} />
+    );
   }
 
   // Use DXF geometry if available, otherwise fall back to text
   if (hasGeometry) {
-    return <DXFLabel labelKey={labelKey} position={labelPos} labelColor={labelColor} />;
+    return (
+      <DXFLabel
+        labelKey={labelKey}
+        position={labelPos}
+        labelColor={labelColor}
+      />
+    );
   }
 
   return <TextLabel text={text} position={labelPos} labelColor={labelColor} />;
