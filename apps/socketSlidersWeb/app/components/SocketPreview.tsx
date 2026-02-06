@@ -65,6 +65,8 @@ export interface SocketPreviewProps {
   labelPosition?: LabelPosition | HorizontalLabelPosition;
   metric: boolean;
   labelStyle?: LabelStyle; // "styled" (DXF) or "plain" (text)
+  socketColor?: string; // custom socket color
+  labelColor?: string; // custom label color
 }
 
 // Socket mesh component
@@ -74,12 +76,14 @@ function SocketMesh({
   socketLength = 50,
   labelPosition,
   metric,
+  socketColor,
 }: {
   orientation: "vertical" | "horizontal";
   socketDiameter: number;
   socketLength?: number;
   labelPosition?: LabelPosition | HorizontalLabelPosition;
   metric?: boolean;
+  socketColor?: string;
 }) {
   const geometry = useMemo(() => {
     // Clamp values to valid ranges
@@ -101,10 +105,12 @@ function SocketMesh({
     }
   }, [orientation, socketDiameter, socketLength, labelPosition]);
 
+  const defaultColor = metric ? "#4a90d9" : "#d94a4a";
+
   return (
     <mesh geometry={geometry}>
       <meshStandardMaterial
-        color={metric ? "#4a90d9" : "#d94a4a"}
+        color={socketColor || defaultColor}
         roughness={0.3}
         metalness={0.1}
       />
@@ -141,9 +147,11 @@ const TARGET_LABEL_HEIGHT = 6;
 function DXFLabel({
   labelKey,
   position,
+  labelColor = "#fcfcfc",
 }: {
   labelKey: string;
   position: [number, number, number];
+  labelColor?: string;
 }) {
   const geometry = useMemo(() => {
     const data = labelGeometry[labelKey];
@@ -237,7 +245,7 @@ function DXFLabel({
 
   return (
     <mesh geometry={geometry} position={position}>
-      <meshStandardMaterial color="#fcfcfc" />
+      <meshStandardMaterial color={labelColor} />
     </mesh>
   );
 }
@@ -246,15 +254,17 @@ function DXFLabel({
 function TextLabel({
   text,
   position,
+  labelColor = "#fcfcfc",
 }: {
   text: string;
   position: [number, number, number];
+  labelColor?: string;
 }) {
   return (
     <Text
       position={position}
       fontSize={5}
-      color="#fcfcfcff"
+      color={labelColor}
       anchorX="center"
       anchorY="middle"
       rotation={[0, 0, 0]}
@@ -271,12 +281,14 @@ function SocketLabel({
   orientation,
   socketDiameter,
   labelStyle = "styled",
+  labelColor = "#fcfcfc",
 }: {
   text: string;
   position?: LabelPosition | HorizontalLabelPosition;
   orientation: "vertical" | "horizontal";
   socketDiameter: number;
   labelStyle?: LabelStyle;
+  labelColor?: string;
 }) {
   const sliderWidth = socketDiameter + 0.75 + 2;
   const labelKey = labelTextToKey(text);
@@ -320,15 +332,15 @@ function SocketLabel({
       labelPos[1],
       labelPos[2],
     ];
-    return <TextLabel text={text} position={plainPos} />;
+    return <TextLabel text={text} position={plainPos} labelColor={labelColor} />;
   }
 
   // Use DXF geometry if available, otherwise fall back to text
   if (hasGeometry) {
-    return <DXFLabel labelKey={labelKey} position={labelPos} />;
+    return <DXFLabel labelKey={labelKey} position={labelPos} labelColor={labelColor} />;
   }
 
-  return <TextLabel text={text} position={labelPos} />;
+  return <TextLabel text={text} position={labelPos} labelColor={labelColor} />;
 }
 
 // Loading fallback
@@ -349,6 +361,8 @@ export function SocketPreview({
   labelPosition,
   metric,
   labelStyle,
+  socketColor,
+  labelColor,
 }: SocketPreviewProps) {
   // Don't render if we don't have valid diameter
   const hasValidDiameter = socketDiameter && socketDiameter > 0;
@@ -375,6 +389,7 @@ export function SocketPreview({
                   socketLength={socketLength}
                   labelPosition={labelPosition}
                   metric={metric}
+                  socketColor={socketColor}
                 />
                 <SocketLabel
                   text={labelText}
@@ -382,6 +397,7 @@ export function SocketPreview({
                   orientation={orientation}
                   socketDiameter={socketDiameter}
                   labelStyle={labelStyle}
+                  labelColor={labelColor}
                 />
               </group>
             </Center>

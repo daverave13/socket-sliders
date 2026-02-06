@@ -38,6 +38,8 @@ export interface ConfigCardState {
   lengthUnit: MeasurementUnit;
   labelPosition: LabelPosition;
   horizontalLabelPosition: HorizontalLabelPosition;
+  socketColor: string; // preview socket color (empty = default)
+  labelColor: string; // preview label color
 }
 
 // Create a new empty config card
@@ -55,6 +57,8 @@ export const createEmptyCard = (expanded = true): ConfigCardState => ({
   lengthUnit: "mm",
   labelPosition: "topLeft",
   horizontalLabelPosition: "bottom",
+  socketColor: "", // empty = use default based on metric/imperial
+  labelColor: "#fcfcfc",
 });
 
 // Build SocketConfig from card state
@@ -111,4 +115,9 @@ export const isCardValid = (card: ConfigCardState): boolean => {
   if (!card.isMetric && !card.nominalImperial) return false;
   if (card.orientation === "horizontal" && !card.length) return false;
   return true;
+};
+
+// Generate a random hex color
+export const randomColor = (): string => {
+  return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 };

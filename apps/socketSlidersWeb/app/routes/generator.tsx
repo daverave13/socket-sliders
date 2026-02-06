@@ -29,6 +29,7 @@ import {
   formatCardSummary,
   isCardValid,
   IMPERIAL_SIZES,
+  randomColor,
 } from "~/lib/generator-utils";
 
 export function meta({}: Route.MetaArgs) {
@@ -252,6 +253,8 @@ export default function Generator() {
                       }
                       metric={card.isMetric}
                       labelStyle={card.labelStyle}
+                      socketColor={card.socketColor || undefined}
+                      labelColor={card.labelColor}
                     />
 
                     {/* Orientation */}
@@ -432,6 +435,63 @@ export default function Generator() {
                         </RadioGroup>
                       </div>
                     )}
+
+                    {/* Preview Colors */}
+                    <div className="space-y-4">
+                      <Label className="text-lg">Preview Colors</Label>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <label
+                            htmlFor={`socketColor-${card.id}`}
+                            className="text-sm"
+                          >
+                            Socket
+                          </label>
+                          <input
+                            type="color"
+                            id={`socketColor-${card.id}`}
+                            value={
+                              card.socketColor ||
+                              (card.isMetric ? "#4a90d9" : "#d94a4a")
+                            }
+                            onChange={(e) =>
+                              updateCard(card.id, { socketColor: e.target.value })
+                            }
+                            className="w-10 h-10 rounded cursor-pointer border-0"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label
+                            htmlFor={`labelColor-${card.id}`}
+                            className="text-sm"
+                          >
+                            Label
+                          </label>
+                          <input
+                            type="color"
+                            id={`labelColor-${card.id}`}
+                            value={card.labelColor}
+                            onChange={(e) =>
+                              updateCard(card.id, { labelColor: e.target.value })
+                            }
+                            className="w-10 h-10 rounded cursor-pointer border-0"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            updateCard(card.id, {
+                              socketColor: randomColor(),
+                              labelColor: randomColor(),
+                            })
+                          }
+                        >
+                          Randomize
+                        </Button>
+                      </div>
+                    </div>
 
                     {/* Outer Diameter */}
                     <div className="space-y-4">
